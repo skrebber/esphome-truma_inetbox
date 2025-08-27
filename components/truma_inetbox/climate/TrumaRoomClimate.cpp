@@ -50,7 +50,7 @@ void TrumaRoomClimate::dump_config() { LOG_CLIMATE(TAG, "Truma Room Climate", th
 void TrumaRoomClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value() && !call.get_fan_mode().has_value()) {
     float temp = *call.get_target_temperature();
-    this->parent_->get_heater()->action_heater_room(static_cast<u_int8_t>(temp));
+    this->parent_->get_heater()->action_heater_room(static_cast<uint8_t>(temp));
   }
 
   if (call.get_mode().has_value()) {
@@ -89,13 +89,13 @@ void TrumaRoomClimate::control(const climate::ClimateCall &call) {
     }
     switch (fan_mode) {
       case climate::CLIMATE_FAN_LOW:
-        this->parent_->get_heater()->action_heater_room(static_cast<u_int8_t>(temp), HeatingMode::HEATING_MODE_ECO);
+        this->parent_->get_heater()->action_heater_room(static_cast<uint8_t>(temp), HeatingMode::HEATING_MODE_ECO);
         break;
       case climate::CLIMATE_FAN_MEDIUM:
-        this->parent_->get_heater()->action_heater_room(static_cast<u_int8_t>(temp), HeatingMode::HEATING_MODE_HIGH);
+        this->parent_->get_heater()->action_heater_room(static_cast<uint8_t>(temp), HeatingMode::HEATING_MODE_HIGH);
         break;
       case climate::CLIMATE_FAN_HIGH:
-        this->parent_->get_heater()->action_heater_room(static_cast<u_int8_t>(temp), HeatingMode::HEATING_MODE_BOOST);
+        this->parent_->get_heater()->action_heater_room(static_cast<uint8_t>(temp), HeatingMode::HEATING_MODE_BOOST);
         break;
       default:
         this->parent_->get_heater()->action_heater_room(0);
@@ -131,7 +131,7 @@ climate::ClimateTraits TrumaRoomClimate::traits() {
   // The capabilities of the climate device
   auto traits = climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
-  traits.set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_HEAT});
+  traits.set_supported_modes({this->supported_modes_});
   traits.set_supported_fan_modes({{
       climate::CLIMATE_FAN_OFF,
       climate::CLIMATE_FAN_LOW,
@@ -148,6 +148,9 @@ climate::ClimateTraits TrumaRoomClimate::traits() {
   traits.set_visual_max_temperature(30);
   traits.set_visual_temperature_step(1);
   return traits;
+}
+void TrumaRoomClimate::set_supported_modes(const std::set<climate::ClimateMode> &modes) {
+  this->supported_modes_ = modes;
 }
 }  // namespace truma_inetbox
 }  // namespace esphome

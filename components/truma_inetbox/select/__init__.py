@@ -7,6 +7,8 @@ from esphome.const import (
     CONF_ICON,
     CONF_OPTIONS,
     ICON_THERMOMETER,
+    CONF_ENTITY_CATEGORY,
+    CONF_DISABLED_BY_DEFAULT,
 )
 from .. import truma_inetbox_ns, CONF_TRUMA_INETBOX_ID, TrumaINetBoxApp
 
@@ -51,28 +53,31 @@ CONF_SUPPORTED_TYPE = {
 
 def set_default_based_on_type():
     def set_defaults_(config):
-        # update the class
-        config[CONF_ID].type = CONF_SUPPORTED_TYPE[config[CONF_TYPE]][CONF_CLASS]
-        # set defaults based on sensor type:
+        type_key = config[CONF_TYPE].upper()  
+        type_data = CONF_SUPPORTED_TYPE[type_key]
+        config[CONF_ID].type = type_data[CONF_CLASS]
         if CONF_ICON not in config:
-            config[CONF_ICON] = CONF_SUPPORTED_TYPE[config[CONF_TYPE]][CONF_ICON]
+            config[CONF_ICON] = type_data[CONF_ICON]
         if CONF_OPTIONS not in config:
-            config[CONF_OPTIONS] = CONF_SUPPORTED_TYPE[config[CONF_TYPE]][CONF_OPTIONS]
+            config[CONF_OPTIONS] = type_data[CONF_OPTIONS]
         return config
 
     return set_defaults_
 
 
-CONFIG_SCHEMA = select.SELECT_SCHEMA.extend(
-    {
-        cv.GenerateID(): cv.declare_id(TrumaSelect),
-        cv.GenerateID(CONF_TRUMA_INETBOX_ID): cv.use_id(TrumaINetBoxApp),
-        cv.Required(CONF_TYPE): cv.enum(CONF_SUPPORTED_TYPE, upper=True),
-        cv.Optional(CONF_OPTIONS): cv.All(
-            cv.ensure_list(cv.string_strict), cv.Length(min=1)
-        ),
-    }
-).extend(cv.COMPONENT_SCHEMA)
+SELECT_SCHEMA_BASE = select.select_schema({})
+CONFIG_SCHEMA = cv.Schema({
+    **SELECT_SCHEMA_BASE.schema,
+    cv.GenerateID(): cv.declare_id(TrumaSelect),
+    cv.GenerateID(CONF_TRUMA_INETBOX_ID): cv.use_id(TrumaINetBoxApp),
+    cv.Required(CONF_TYPE): cv.one_of(*CONF_SUPPORTED_TYPE.keys()),
+    cv.Optional(CONF_ICON): cv.icon,
+    cv.Optional(CONF_OPTIONS): cv.All(
+        cv.ensure_list(cv.string_strict), cv.Length(min=1)
+    ),
+    cv.Optional(CONF_ENTITY_CATEGORY): cv.entity_category,
+    cv.Optional(CONF_DISABLED_BY_DEFAULT, default=False): cv.boolean,
+}).extend(cv.COMPONENT_SCHEMA)
 FINAL_VALIDATE_SCHEMA = set_default_based_on_type()
 
 
@@ -86,4 +91,5 @@ async def to_code(config):
     )
     await cg.register_parented(var, config[CONF_TRUMA_INETBOX_ID])
 
-    cg.add(var.set_type(CONF_SUPPORTED_TYPE[config[CONF_TYPE]][CONF_TYPE]))
+    type_key = config[CONF_TYPE].upper()
+    cg.add(var.set_type(CONF_SUPPORTED_TYPE[type_key][CONF_TYPE]))

@@ -22,7 +22,7 @@ void TrumaWaterClimate::dump_config() { LOG_CLIMATE(TAG, "Truma Climate", this);
 void TrumaWaterClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value()) {
     float temp = *call.get_target_temperature();
-    this->parent_->get_heater()->action_heater_water(static_cast<u_int8_t>(temp));
+    this->parent_->get_heater()->action_heater_water(static_cast<uint8_t>(temp));
   }
 
   if (call.get_mode().has_value()) {
@@ -45,11 +45,14 @@ climate::ClimateTraits TrumaWaterClimate::traits() {
   // The capabilities of the climate device
   auto traits = climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
-  traits.set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_HEAT});
+  traits.set_supported_modes(this->supported_modes_);
   traits.set_visual_min_temperature(40);
   traits.set_visual_max_temperature(80);
   traits.set_visual_temperature_step(20);
   return traits;
+}
+void TrumaWaterClimate::set_supported_modes(const std::set<climate::ClimateMode> &modes) {
+  this->supported_modes_ = modes;
 }
 }  // namespace truma_inetbox
 }  // namespace esphome

@@ -14,8 +14,10 @@ class TrumaWaterClimate : public Component, public climate::Climate, public Pare
   void control(const climate::ClimateCall &call) override;
 
   climate::ClimateTraits traits() override;
+  void set_supported_modes(const std::set<climate::ClimateMode> &modes);
 
  protected:
+ std::set<esphome::climate::ClimateMode> supported_modes_;
  private:
 };
 }  // namespace truma_inetbox

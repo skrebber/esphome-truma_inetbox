@@ -85,21 +85,21 @@ void TrumaiNetBoxApp::lin_reset_device() {
   this->update_time_ = 0;
 }
 
-bool TrumaiNetBoxApp::answer_lin_order_(const u_int8_t pid) {
+bool TrumaiNetBoxApp::answer_lin_order_(const uint8_t pid) {
   // Alive message
   if (pid == LIN_PID_TRUMA_INET_BOX) {
-    std::array<u_int8_t, 8> response = this->lin_empty_response_;
+    std::array<uint8_t, 8> response = this->lin_empty_response_;
 
     if (this->updates_to_send_.empty() && !this->has_update_to_submit_()) {
       response[0] = 0xFE;
     }
-    this->write_lin_answer_(response.data(), (u_int8_t) sizeof(response));
+    this->write_lin_answer_(response.data(), (uint8_t) sizeof(response));
     return true;
   }
   return LinBusProtocol::answer_lin_order_(pid);
 }
 
-bool TrumaiNetBoxApp::lin_read_field_by_identifier_(u_int8_t identifier, std::array<u_int8_t, 5> *response) {
+bool TrumaiNetBoxApp::lin_read_field_by_identifier_(uint8_t identifier, std::array<uint8_t, 5> *response) {
   if (identifier == 0x00 /* LIN Product Identification */) {
     auto lin_identifier = this->lin_identifier();
     (*response)[0] = lin_identifier[0];
@@ -125,19 +125,19 @@ bool TrumaiNetBoxApp::lin_read_field_by_identifier_(u_int8_t identifier, std::ar
   return false;
 }
 
-const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message, const u_int8_t message_len,
-                                                         u_int8_t *return_len) {
-  static u_int8_t response[48] = {};
+const uint8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const uint8_t *message, const uint8_t message_len,
+                                                         uint8_t *return_len) {
+  static uint8_t response[48] = {};
   // Validate message prefix.
   if (message_len < truma_message_header.size()) {
     return nullptr;
   }
-  for (u_int8_t i = 1; i < truma_message_header.size() - 3; i++) {
+  for (uint8_t i = 1; i < truma_message_header.size() - 3; i++) {
     if (message[i] != truma_message_header[i] && message[i] != alde_message_header[i]) {
       return nullptr;
     }
   }
-  if (message[4] != (u_int8_t) this->company_) {
+  if (message[4] != (uint8_t) this->company_) {
     ESP_LOGI(TAG, "Switch company to 0x%02x", message[4]);
     this->company_ = (TRUMA_COMPANY) message[4];
   }
@@ -295,7 +295,7 @@ const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message
     }
     ESP_LOGD(TAG, "StatusFrameResponseAck %02X %s %02X", statusFrame->genericHeader.command_counter,
              data.error_code == ResponseAckResult::RESPONSE_ACK_RESULT_OKAY ? " OKAY " : " FAILED ",
-             (u_int8_t) data.error_code);
+             (uint8_t) data.error_code);
 
     if (data.error_code != ResponseAckResult::RESPONSE_ACK_RESULT_OKAY) {
       // I tried to update something and it failed. Read current state again to validate and hold any updates for now.

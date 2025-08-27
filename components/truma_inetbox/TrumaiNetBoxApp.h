@@ -23,7 +23,7 @@ class TrumaiNetBoxApp : public LinBusProtocol {
   TrumaiNetBoxApp();
   void update() override;
 
-  const std::array<u_int8_t, 4> lin_identifier() override;
+  const std::array<uint8_t, 4> lin_identifier() override;
   void lin_heartbeat() override;
   void lin_reset_device() override;
 
@@ -49,7 +49,7 @@ class TrumaiNetBoxApp : public LinBusProtocol {
   uint32_t device_registered_ = 0;
   uint32_t init_requested_ = 0;
   uint32_t init_recieved_ = 0;
-  u_int8_t message_counter = 1;
+  uint8_t message_counter = 1;
 
   // Truma heater conected to CP Plus.
   TRUMA_COMPANY company_ = TRUMA_COMPANY::TRUMA;
@@ -73,11 +73,11 @@ class TrumaiNetBoxApp : public LinBusProtocol {
   bool update_status_clock_done = false;
 #endif  // USE_TIME
 
-  bool answer_lin_order_(const u_int8_t pid) override;
+  bool answer_lin_order_(const uint8_t pid) override;
 
-  bool lin_read_field_by_identifier_(u_int8_t identifier, std::array<u_int8_t, 5> *response) override;
-  const u_int8_t *lin_multiframe_recieved(const u_int8_t *message, const u_int8_t message_len,
-                                          u_int8_t *return_len) override;
+  bool lin_read_field_by_identifier_(uint8_t identifier, std::array<uint8_t, 5> *response) override;
+  const uint8_t *lin_multiframe_recieved(const uint8_t *message, const uint8_t message_len,
+                                          uint8_t *return_len) override;
 
   bool has_update_to_submit_();
 };

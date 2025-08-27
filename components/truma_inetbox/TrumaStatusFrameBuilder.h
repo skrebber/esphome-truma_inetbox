@@ -6,8 +6,8 @@
 namespace esphome {
 namespace truma_inetbox {
 
-inline void status_frame_create_empty(StatusFrame *response, u_int8_t message_type, u_int8_t message_length,
-                                      u_int8_t command_counter) {
+inline void status_frame_create_empty(StatusFrame *response, uint8_t message_type, uint8_t message_length,
+                                      uint8_t command_counter) {
   response->genericHeader.service_identifier = LIN_SID_READ_STATE_BUFFER | LIN_SID_RESPONSE;
   // Copy header over for this message.
   for (size_t i = 1; i < truma_message_header.size(); i++) {
@@ -25,7 +25,7 @@ inline void status_frame_calculate_checksum(StatusFrame *response) {
   response->genericHeader.checksum = data_checksum(&response->raw[10], sizeof(StatusFrame) - 10, 0);
 }
 
-inline void status_frame_create_init(StatusFrame *response, u_int8_t *response_len, u_int8_t command_counter) {
+inline void status_frame_create_init(StatusFrame *response, uint8_t *response_len, uint8_t command_counter) {
   status_frame_create_empty(response, STATUS_FRAME_RESPONSE_INIT_REQUEST, 0, command_counter);
 
   // Init frame is empty.
