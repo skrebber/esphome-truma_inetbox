@@ -132,12 +132,14 @@ climate::ClimateTraits TrumaRoomClimate::traits() {
   auto traits = climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
   traits.set_supported_modes({this->supported_modes_});
+
   traits.set_supported_fan_modes({{
       climate::CLIMATE_FAN_OFF,
       climate::CLIMATE_FAN_LOW,
       climate::CLIMATE_FAN_MEDIUM,
       climate::CLIMATE_FAN_HIGH,
   }});
+  
   // traits.set_supported_presets({{
   //     climate::CLIMATE_PRESET_NONE,
   //     climate::CLIMATE_PRESET_ECO,
@@ -149,8 +151,10 @@ climate::ClimateTraits TrumaRoomClimate::traits() {
   traits.set_visual_temperature_step(1);
   return traits;
 }
+  
 void TrumaRoomClimate::set_supported_modes(const std::set<climate::ClimateMode> &modes) {
   this->supported_modes_ = modes;
 }
+
 }  // namespace truma_inetbox
 }  // namespace esphome

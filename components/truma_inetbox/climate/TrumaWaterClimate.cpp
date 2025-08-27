@@ -51,8 +51,10 @@ climate::ClimateTraits TrumaWaterClimate::traits() {
   traits.set_visual_temperature_step(20);
   return traits;
 }
+
 void TrumaWaterClimate::set_supported_modes(const std::set<climate::ClimateMode> &modes) {
   this->supported_modes_ = modes;
 }
+
 }  // namespace truma_inetbox
 }  // namespace esphome

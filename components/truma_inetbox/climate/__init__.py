@@ -54,7 +54,9 @@ CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(TrumaClimate),
     cv.GenerateID(CONF_TRUMA_INETBOX_ID): cv.use_id(TrumaINetBoxApp),
     cv.Required(CONF_TYPE): cv.enum(CONF_SUPPORTED_TYPE, upper=True),
+
     cv.Optional(CONF_NAME, default="Truma Climate"): cv.string,
+
     cv.Optional("preset"): cv.All(cv.ensure_list(cv.string)),  # If you want presets
     cv.Optional("supported_modes", default=["OFF", "HEAT"]): cv.ensure_list(cv.enum(CLIMATE_MODES, upper=True)),
 }).extend(cv.COMPONENT_SCHEMA).extend({
@@ -63,6 +65,7 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Optional("icon"): cv.icon,
     cv.Optional(CONF_VISUAL, default={}): CLIMATE_VISUAL_SCHEMA,
 })
+
 FINAL_VALIDATE_SCHEMA = set_default_based_on_type()
 
 
@@ -71,8 +74,15 @@ async def to_code(config):
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
     await cg.register_parented(var, config[CONF_TRUMA_INETBOX_ID])
+
+    # Optional visual settings
+    #if "visual" in config:
+    #    visual = config["visual"]
+    #    cg.add(var.set_visual_min_temperature(visual["min_temperature"]))
+    #    cg.add(var.set_visual_max_temperature(visual["max_temperature"]))
+    #    cg.add(var.set_visual_temperature_step(visual["temperature_step"]))
+
+    # Optional supported modes
     if "supported_modes" in config:
-        modes = [CLIMATE_MODES[m] for m in config["supported_modes"]]        
         modes = [CLIMATE_MODES[m] for m in config["supported_modes"]]
-        cg.add(var.set_supported_modes(modes))        
         cg.add(var.set_supported_modes(modes))

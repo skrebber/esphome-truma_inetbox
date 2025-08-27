@@ -53,19 +53,24 @@ CONF_SUPPORTED_TYPE = {
 
 def set_default_based_on_type():
     def set_defaults_(config):
-        type_key = config[CONF_TYPE].upper()  
+        type_key = config[CONF_TYPE].upper()  # normalize for lookup
         type_data = CONF_SUPPORTED_TYPE[type_key]
+
         config[CONF_ID].type = type_data[CONF_CLASS]
+
         if CONF_ICON not in config:
             config[CONF_ICON] = type_data[CONF_ICON]
+
         if CONF_OPTIONS not in config:
             config[CONF_OPTIONS] = type_data[CONF_OPTIONS]
-        return config
 
+        return config
     return set_defaults_
 
 
+
 SELECT_SCHEMA_BASE = select.select_schema({})
+
 CONFIG_SCHEMA = cv.Schema({
     **SELECT_SCHEMA_BASE.schema,
     cv.GenerateID(): cv.declare_id(TrumaSelect),
@@ -78,8 +83,9 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_ENTITY_CATEGORY): cv.entity_category,
     cv.Optional(CONF_DISABLED_BY_DEFAULT, default=False): cv.boolean,
 }).extend(cv.COMPONENT_SCHEMA)
-FINAL_VALIDATE_SCHEMA = set_default_based_on_type()
 
+
+FINAL_VALIDATE_SCHEMA = set_default_based_on_type()
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
