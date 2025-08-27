@@ -8,6 +8,10 @@ See [1](https://github.com/danielfett/inetbox.py) and [2](https://github.com/mc0
 
 This project is based on the work of the [WomoLIN project](https://github.com/muccc/WomoLIN) and [mc0110 inetbox.py](https://github.com/danielfett/inetbox.py), especially the initial protocol decoding and the inet box log files.
 
+## Changes to compile again under recent ESPhome versions
+
+There are several forks available all adressing different issues to make this code compile again. Unfortunatly none addresses all issues at the same time. I collected the different approaches into this release to successfull compile it again.
+
 ## Example configuation
 
 This example is just for connecting ESPHome to the CP Plus. See [truma.yaml](/truma.yaml) for an example config with all possible things configured.
@@ -17,7 +21,7 @@ esphome:
   name: "esphome-truma"
 
 external_components:
-  - source: github://Fabian-Schmidt/esphome-truma_inetbox
+  - source: github://skrebber/esphome-truma_inetbox
     components: ["truma_inetbox"]
 
 esp32:

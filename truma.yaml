@@ -7,7 +7,7 @@ esphome:
       - ds1307.read_time
 
 external_components:
-  - source: github://Fabian-Schmidt/esphome-truma_inetbox
+  - source: github://skrebber/esphome-truma_inetbox
   # - source:
   #     type: local
   #     path: ./components

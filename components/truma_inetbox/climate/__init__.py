@@ -4,6 +4,7 @@ import esphome.codegen as cg
 from esphome.const import (
     CONF_ID,
     CONF_TYPE,
+    CONF_NAME,
     CONF_VISUAL,
     CONF_TARGET_TEMPERATURE,
     CONF_MIN_TEMPERATURE,
@@ -53,9 +54,7 @@ CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(TrumaClimate),
     cv.GenerateID(CONF_TRUMA_INETBOX_ID): cv.use_id(TrumaINetBoxApp),
     cv.Required(CONF_TYPE): cv.enum(CONF_SUPPORTED_TYPE, upper=True),
-
     cv.Optional(CONF_NAME, default="Truma Climate"): cv.string,
-
     cv.Optional("preset"): cv.All(cv.ensure_list(cv.string)),  # If you want presets
     cv.Optional("supported_modes", default=["OFF", "HEAT"]): cv.ensure_list(cv.enum(CLIMATE_MODES, upper=True)),
 }).extend(cv.COMPONENT_SCHEMA).extend({
