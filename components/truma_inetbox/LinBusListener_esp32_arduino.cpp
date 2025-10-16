@@ -17,7 +17,7 @@ namespace truma_inetbox {
 
 static const char *const TAG = "truma_inetbox.LinBusListener";
 
-#define QUEUE_WAIT_BLOCKING (TickType_t) portMAX_DELAY
+#define QUEUE_WAIT_BLOCKING (portTickType) portMAX_DELAY
 
 void LinBusListener::setup_framework() {
   auto uartComp = static_cast<ESPHOME_UART *>(this->parent_);
