@@ -11,6 +11,7 @@ This project is based on the work of the [WomoLIN project](https://github.com/mu
 ## Changes to compile again under recent ESPhome versions
 
 There are several forks available all adressing different issues to make this code compile again. Unfortunatly none addresses all issues at the same time. I collected the different approaches into this release to successfull compile it again.
+*Remark:* At the moment only compiling with the arduino framework works.
 
 ## Example configuation
 
