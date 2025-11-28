@@ -46,7 +46,10 @@ climate::ClimateTraits TrumaWaterClimate::traits() {
   auto traits = climate::ClimateTraits();
   //traits.set_supports_current_temperature(true);
   traits.add_feature_flags(esphome::climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE)
-  traits.set_supported_modes(this->supported_modes_);
+  //traits.set_supported_modes(this->supported_modes_);
+  for (auto mode : this->supported_modes_) {
+    traits.add_supported_mode(mode);
+  }
   traits.set_visual_min_temperature(40);
   traits.set_visual_max_temperature(80);
   traits.set_visual_temperature_step(20);

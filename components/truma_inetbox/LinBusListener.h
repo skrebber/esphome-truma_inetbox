@@ -135,11 +135,9 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
 #ifdef USE_ESP32
   TaskHandle_t eventTaskHandle_;
   static void eventTask_(void *args);
-#endif  // USE_ESP32
-#ifdef USE_ESP32_FRAMEWORK_ESP_IDF
   TaskHandle_t uartEventTaskHandle_;
   static void uartEventTask_(void *args);
-#endif  // USE_ESP32_FRAMEWORK_ESP_IDF
+#endif  // USE_ESP32
 #ifdef USE_RP2040
   uint8_t uart_number_ = 0;
   uart_inst_t *uart_ = nullptr;

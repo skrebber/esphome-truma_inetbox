@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include "esphome/components/climate/climate.h"
 #include "esphome/core/component.h"
 #include "esphome/components/truma_inetbox/TrumaiNetBoxApp.h"
