@@ -65,7 +65,7 @@ jobs:
         uses: actions/setup-python@v4
         id: python
         with:
-          python-version: "3.9"
+          python-version: "3.11"
 
       - name: Cache virtualenv
         uses: actions/cache@v3
@@ -82,7 +82,7 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
           pip install -U pip
-          pip install esphome==2025.11.2
+          pip install esphome==2024.11.3
           echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
           echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
         # yamllint enable rule:line-length
