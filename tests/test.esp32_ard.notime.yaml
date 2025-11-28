@@ -12,6 +12,8 @@ esp32:
   framework:
     type: arduino
 
+logger:
+
 uart: !include test.common.uart.yaml
 truma_inetbox:
   uart_id: lin_uart_bus

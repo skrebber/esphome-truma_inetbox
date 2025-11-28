@@ -17,6 +17,8 @@ esp32:
   framework:
     type: arduino
 
+logger:
+
 i2c:
   sda: 14
   scl: 27

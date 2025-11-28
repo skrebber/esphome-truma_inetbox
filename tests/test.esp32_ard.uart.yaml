@@ -8,8 +8,8 @@ esphome:
 
 external_components:
   # https://github.com/esphome/esphome/pull/4465
-  - source: github://pr#4465
-    components: [uart]
+  # - source: github://pr#4465
+  #   components: [uart]
   - source:
       type: local
       path: ../components
@@ -19,6 +19,8 @@ esp32:
   board: esp32dev
   framework:
     type: arduino
+
+logger:
 
 i2c:
   sda: 14
