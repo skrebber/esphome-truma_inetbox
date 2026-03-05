@@ -17,6 +17,8 @@ rp2040:
   framework:
     platform_version: https://github.com/maxgerhardt/platform-raspberrypi.git
 
+logger:
+
 i2c:
   sda: 14
   scl: 27

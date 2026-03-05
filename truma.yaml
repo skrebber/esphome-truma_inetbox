@@ -18,6 +18,9 @@ esp32:
   framework:
     type: esp-idf
 
+logger:
+  level: INFO
+
 i2c:
   sda: 14
   scl: 27
