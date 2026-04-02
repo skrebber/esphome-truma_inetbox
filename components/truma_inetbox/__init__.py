@@ -235,7 +235,7 @@ CONFIG_SCHEMA = cv.All(
     )
     .extend(cv.polling_component_schema("500ms"))
     .extend(uart.UART_DEVICE_SCHEMA),
-    cv.only_on(["esp32", "rp2040"]),
+    cv.only_on(["esp32"]),
 )
 
 FINAL_VALIDATE_SCHEMA = cv.All(
