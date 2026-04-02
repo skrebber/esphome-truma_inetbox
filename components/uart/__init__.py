@@ -36,14 +36,14 @@ UARTComponent = uart_ns.class_("UARTComponent")
 
 IDFUARTComponent = uart_ns.class_(
     "truma_IDFUARTComponent", UARTComponent, cg.Component)
-ESP32ArduinoUARTComponent = uart_ns.class_(
-    "truma_ESP32ArduinoUARTComponent", UARTComponent, cg.Component
-)
-ESP8266UartComponent = uart_ns.class_(
-    "ESP8266UartComponent", UARTComponent, cg.Component
-)
-RP2040UartComponent = uart_ns.class_(
-    "truma_RP2040UartComponent", UARTComponent, cg.Component)
+#ESP32ArduinoUARTComponent = uart_ns.class_(
+#    "truma_ESP32ArduinoUARTComponent", UARTComponent, cg.Component
+#)
+#ESP8266UartComponent = uart_ns.class_(
+#    "ESP8266UartComponent", UARTComponent, cg.Component
+#)
+#RP2040UartComponent = uart_ns.class_(
+#    "truma_RP2040UartComponent", UARTComponent, cg.Component)
 
 UARTDevice = uart_ns.class_("UARTDevice")
 UARTWriteAction = uart_ns.class_("UARTWriteAction", automation.Action)
@@ -216,7 +216,7 @@ async def to_code(config):
     cg.add_global(uart_ns.using)
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
-    cg.add_build_flag("-DCUSTOM_ESPHOME_UART");
+    //cg.add_build_flag("-DCUSTOM_ESPHOME_UART");
 
     cg.add(var.set_baud_rate(config[CONF_BAUD_RATE]))
 

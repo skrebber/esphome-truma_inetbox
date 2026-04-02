@@ -8,10 +8,10 @@ esphome:
 
 external_components:
   - source: github://skrebber/esphome-truma_inetbox
-  # - source:
-  #     type: local
-  #     path: ./components
     components: ["truma_inetbox"]
+    refresh: always
+
+
 
 esp32:
   board: esp32dev

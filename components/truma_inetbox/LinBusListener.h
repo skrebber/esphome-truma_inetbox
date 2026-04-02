@@ -6,19 +6,14 @@
 
 #ifdef USE_ESP32
 #include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
 #include <freertos/semphr.h>
 #endif  // USE_ESP32
-#ifdef USE_RP2040
-#include <hardware/uart.h>
-#include <FreeRTOS.h>
-#include <semphr.h>
-#include <queue.h>
-#endif  // USE_RP2040
 
-#ifndef  TRUMA_MSG_QUEUE_LENGTH
+#ifndef TRUMA_MSG_QUEUE_LENGTH
 #define TRUMA_MSG_QUEUE_LENGTH 6
 #endif
-#ifndef  TRUMA_LOG_QUEUE_LENGTH
+#ifndef TRUMA_LOG_QUEUE_LENGTH
 #define TRUMA_LOG_QUEUE_LENGTH 6
 #endif
 
@@ -40,6 +35,7 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
   void dump_config() override;
   void setup() override;
   void update() override;
+  void loop() override;
 
   void set_lin_checksum(LIN_CHECKSUM val) { this->lin_checksum_ = val; }
   void set_cs_pin(GPIOPin *pin) { this->cs_pin_ = pin; }
@@ -49,11 +45,6 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
 
   void process_lin_msg_queue(TickType_t xTicksToWait);
   void process_log_queue(TickType_t xTicksToWait);
-
-#ifdef USE_RP2040
-  // Return is the expected wait time till next data check is recommended.
-  u_int32_t onSerialEvent();
-#endif  // USE_RP2040
 
  protected:
   LIN_CHECKSUM lin_checksum_ = LIN_CHECKSUM::LIN_CHECKSUM_VERSION_2;
@@ -67,19 +58,19 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
   virtual void lin_message_recieved_(const uint8_t pid, const uint8_t *message, uint8_t length) = 0;
 
  private:
-  // Microseconds per UART Baud
-  u_int32_t time_per_baud_;
-  // 9.. 15
+  // Microseconds per UART baud
+  uint32_t time_per_baud_{0};
+  // 9..15
   const uint8_t lin_break_length = 13;
-  // Microseconds per LIN Break
-  u_int32_t time_per_lin_break_;
-  const uint8_t frame_length_ = (8 /* bits */ + 1 /* Start bit */ + 2 /* Stop bits */);
-  // Microseconds per UART Byte (UART Frame)
-  u_int32_t time_per_pid_;
-  // Microseconds per UART Byte (UART Frame)
-  u_int32_t time_per_first_byte_;
-  // Microseconds per UART Byte (UART Frame)
-  u_int32_t time_per_byte_;
+  // Microseconds per LIN break
+  uint32_t time_per_lin_break_{0};
+  const uint8_t frame_length_ = (8 /* bits */ + 1 /* start bit */ + 2 /* stop bits */);
+  // Microseconds per UART byte (UART frame)
+  uint32_t time_per_pid_{0};
+  // Microseconds per UART byte (UART frame)
+  uint32_t time_per_first_byte_{0};
+  // Microseconds per UART byte (UART frame)
+  uint32_t time_per_byte_{0};
 
   uint8_t fault_on_lin_bus_reported_ = 0;
   bool can_write_lin_answer_ = false;
@@ -99,7 +90,7 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
   uint8_t current_data_count_ = 0;
   // up to 8 byte data frame + CRC
   uint8_t current_data_[9] = {};
-  // // Time when the last LIN data was available.
+  // Time when the last LIN data was available.
   uint32_t last_data_recieved_ = 0;
 
   void current_state_reset_() {
@@ -111,7 +102,8 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
     this->current_data_count_ = 0;
     memset(this->current_data_, 0, sizeof(this->current_data_));
   };
-  void onReceive_();
+
+  void on_receive_();
   void read_lin_frame_();
   void clear_uart_buffer_();
   void setup_framework();
@@ -131,17 +123,6 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
                          /* uxItemSize */ sizeof(QUEUE_LOG_MSG),
                          /* pucQueueStorageBuffer */ log_static_queue_storage, &log_static_queue_);
 #endif
-
-#ifdef USE_ESP32
-  TaskHandle_t eventTaskHandle_;
-  static void eventTask_(void *args);
-  TaskHandle_t uartEventTaskHandle_;
-  static void uartEventTask_(void *args);
-#endif  // USE_ESP32
-#ifdef USE_RP2040
-  uint8_t uart_number_ = 0;
-  uart_inst_t *uart_ = nullptr;
-#endif  // USE_RP2040
 };
 
 }  // namespace truma_inetbox

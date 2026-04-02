@@ -59,18 +59,29 @@ void LinBusListener::setup() {
 
 #if ESPHOME_LOG_LEVEL > ESPHOME_LOG_LEVEL_NONE
   assert(this->log_queue_ != 0);
-
-  // Register interval to submit log messages
-  this->set_interval("logmsg", 50, [this]() { this->process_log_queue(QUEUE_WAIT_DONT_BLOCK); });
 #endif  // ESPHOME_LOG_LEVEL > ESPHOME_LOG_LEVEL_NONE
 
   if (this->cs_pin_ != nullptr) {
-    // Enable LIN driver if not in oberserver mode.
+    // Enable LIN driver if not in observer mode.
     this->cs_pin_->digital_write(!this->observer_mode_);
   }
 }
 
 void LinBusListener::update() { this->check_for_lin_fault_(); }
+
+void LinBusListener::loop() {
+  if (!this->check_for_lin_fault_()) {
+    if (this->available() > 0) {
+      this->on_receive_();
+    }
+  }
+
+  this->process_lin_msg_queue(QUEUE_WAIT_DONT_BLOCK);
+
+#if ESPHOME_LOG_LEVEL > ESPHOME_LOG_LEVEL_NONE
+  this->process_log_queue(QUEUE_WAIT_DONT_BLOCK);
+#endif  // ESPHOME_LOG_LEVEL > ESPHOME_LOG_LEVEL_NONE
+}
 
 void LinBusListener::write_lin_answer_(const uint8_t *data, uint8_t len) {
   QUEUE_LOG_MSG log_msg = QUEUE_LOG_MSG();
@@ -152,12 +163,19 @@ bool LinBusListener::check_for_lin_fault_() {
   }
 }
 
-void LinBusListener::onReceive_() {
-  if (!this->check_for_lin_fault_()) {
-    while (this->available()) {
-      this->read_lin_frame_();
-      this->last_data_recieved_ = micros();
+void LinBusListener::on_receive_() {
+  while (this->available()) {
+    const uint32_t now = micros();
+
+    // ESPHome 2026 no longer gives this component a UART event queue / UART_BREAK event.
+    // Re-sync the LIN parser by treating a sufficiently long RX gap as a new frame boundary.
+    if (this->last_data_recieved_ != 0 &&
+        (now - this->last_data_recieved_) > this->time_per_lin_break_) {
+      this->current_state_ = READ_STATE_BREAK;
     }
+
+    this->read_lin_frame_();
+    this->last_data_recieved_ = micros();
   }
 }
 
@@ -188,21 +206,21 @@ void LinBusListener::read_lin_frame_() {
       // Reset current state
       this->current_state_reset_();
 
-      // First is Break expected. Arduino platform does not relay BREAK if send as special.
+      // First is Break expected.
+      // Some setups expose the break as 0x00, others only let us see the following sync.
       if (!this->read_byte(&buf) || (buf != LIN_BREAK && buf != LIN_SYNC)) {
         log_msg.type = QUEUE_LOG_MSG_TYPE::VV_READ_LIN_FRAME_BREAK_EXPECTED;
         log_msg.current_PID = buf;
         TRUMA_LOGVV_ISR(log_msg);
       } else {
         if (buf == LIN_BREAK) {
-          // ESP_LOGVV(TAG, "%02X BREAK received.", buf);
           this->current_state_ = READ_STATE_SYNC;
         } else if (buf == LIN_SYNC) {
-          // ESP_LOGVV(TAG, "%02X SYNC found.", buf);
           this->current_state_ = READ_STATE_SID;
         }
       }
       break;
+
     case READ_STATE_SYNC:
       // Second is Sync expected
       if (!this->read_byte(&buf) || buf != LIN_SYNC) {
@@ -211,10 +229,10 @@ void LinBusListener::read_lin_frame_() {
         TRUMA_LOGVV_ISR(log_msg);
         this->current_state_ = buf == LIN_BREAK ? READ_STATE_SYNC : READ_STATE_BREAK;
       } else {
-        // ESP_LOGVV(TAG, "%02X SYNC found.", buf);
         this->current_state_ = READ_STATE_SID;
       }
       break;
+
     case READ_STATE_SID:
       this->read_byte(&(this->current_PID_with_parity_));
       this->current_PID_ = this->current_PID_with_parity_ & 0x3F;
@@ -238,10 +256,11 @@ void LinBusListener::read_lin_frame_() {
       // Even on error read data.
       this->current_state_ = READ_STATE_DATA;
       break;
+
     case READ_STATE_DATA: {
       auto current = micros();
       if (current > (this->last_data_recieved_ + this->time_per_first_byte_)) {
-        // timeout occured.
+        // timeout occurred.
         this->current_state_ = READ_STATE_BREAK;
         return;
       }
@@ -255,6 +274,7 @@ void LinBusListener::read_lin_frame_() {
       }
       break;
     }
+
     default:
       break;
   }
@@ -313,7 +333,7 @@ void LinBusListener::read_lin_frame_() {
       for (uint8_t i = 0; i < lin_msg.len; i++) {
         lin_msg.data[i] = this->current_data_[i];
       }
-      xQueueSendFromISR(this->lin_msg_queue_, (void *) &lin_msg, QUEUE_WAIT_DONT_BLOCK);
+      xQueueSend(this->lin_msg_queue_, (void *) &lin_msg, QUEUE_WAIT_DONT_BLOCK);
     }
     this->current_state_ = READ_STATE_BREAK;
   }
@@ -389,11 +409,11 @@ void LinBusListener::process_log_queue(TickType_t xTicksToWait) {
         if (current_PID == 0x20 || current_PID == 0x21 || current_PID == 0x22 ||
             ((current_PID == DIAGNOSTIC_FRAME_MASTER || current_PID == DIAGNOSTIC_FRAME_SLAVE) &&
              log_msg.data[0] == 0x01 /* ID of heater */)) {
-          ESP_LOGVV(TAG, "PID %02X      %s %s %s", current_PID_, format_hex_pretty(log_msg.data, log_msg.len).c_str(),
+          ESP_LOGVV(TAG, "PID %02X      %s %s %s", current_PID, format_hex_pretty(log_msg.data, log_msg.len).c_str(),
                     log_msg.message_source_know ? (log_msg.message_from_master ? " - MASTER" : " - SLAVE") : "",
                     log_msg.current_data_valid ? "" : "INVALID");
         } else {
-          ESP_LOGV(TAG, "PID %02X      %s %s %S", current_PID_, format_hex_pretty(log_msg.data, log_msg.len).c_str(),
+          ESP_LOGV(TAG, "PID %02X      %s %s %s", current_PID, format_hex_pretty(log_msg.data, log_msg.len).c_str(),
                    log_msg.message_source_know ? (log_msg.message_from_master ? " - MASTER" : " - SLAVE") : "",
                    log_msg.current_data_valid ? "" : "INVALID");
         }
