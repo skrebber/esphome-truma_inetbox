@@ -1,10 +1,6 @@
 esphome:
   name: "esphome-truma-all-config"
 
-  on_boot:
-    then:
-      # read time from external source (connected via I2C)
-      - ds1307.read_time
 
 external_components:
   - source: github://skrebber/esphome-truma_inetbox
@@ -28,9 +24,8 @@ i2c:
   id: i2c_bus_a
 
 time:
-  - platform: ds1307
-    update_interval: never
-    id: esptime
+  - platform: homeassistant
+    id: homeassistant_time
 
 uart:
   - id: lin_uart_bus
@@ -43,18 +38,9 @@ uart:
 
 truma_inetbox:
   uart_id: lin_uart_bus
-  time_id: esptime
-  cs_pin: 5
-  fault_pin: 18
-  # Advanced users can use `on_heater_message` action. The heater data is in the `message` variable.
-  on_heater_message:
-    then:
-    - logger.log: "Message from CP Plus."
-    - if:
-        condition:
-          lambda: return message->operating_status == truma_inetbox::OperatingStatus::OPERATING_STATUS_OFF;
-        then:
-          - logger.log: "Heater is off."
+  time_id: homeassistant_time
+
+
 
 binary_sensor:
   - platform: truma_inetbox
@@ -84,17 +70,10 @@ binary_sensor:
   - platform: truma_inetbox
     name: "Heater has error"
     type: HEATER_HAS_ERROR
-
-  - platform: truma_inetbox
-    name: "Timer active"
-    type: TIMER_ACTIVE
-    id: TIMER_ACTIVE
-  - platform: truma_inetbox
-    name: "Timer Room Heater active"
-    type: TIMER_ROOM
-  - platform: truma_inetbox
-    name: "Timer Water Heater active"
-    type: TIMER_WATER
+  - platform: template
+    name: "Supply Electricity"
+    lambda: |-
+      return ((int) id(operating_status).state & 0b00000010) != 0;
 
 climate:
   - platform: truma_inetbox
@@ -106,19 +85,22 @@ climate:
 
 number:
   - platform: truma_inetbox
-    name: "Target Room Temperature"
+    name: "Target Room Temperature Setpoint"
     type: TARGET_ROOM_TEMPERATURE
   - platform: truma_inetbox
-    name: "Target Water Temperature"
+    name: "Target Water Temperature Setpoint"
     type: TARGET_WATER_TEMPERATURE
   - platform: truma_inetbox
-    name: "electric power level"
+    name: "Electric Power Level Setpoint"
     type: ELECTRIC_POWER_LEVEL
   - platform: truma_inetbox
     name: "Aircon Temperature"
     type: AIRCON_MANUAL_TEMPERATURE
 
 sensor:
+  - platform: internal_temperature
+    name: "Internal Temperature"
+    
   - platform: truma_inetbox
     name: "Current Room Temperature"
     type: CURRENT_ROOM_TEMPERATURE
@@ -126,22 +108,23 @@ sensor:
     name: "Current Water Temperature"
     type: CURRENT_WATER_TEMPERATURE
   - platform: truma_inetbox
-    name: "Target Room Temperature"
+    name: "Target Room Temperature Reported"
     type: TARGET_ROOM_TEMPERATURE
   - platform: truma_inetbox
-    name: "Target Water Temperature"
+    name: "Target Water Temperature Reported"
     type: TARGET_WATER_TEMPERATURE
   - platform: truma_inetbox
     name: "Heating mode"
     type: HEATING_MODE
   - platform: truma_inetbox
-    name: "electric power level"
+    name: "Electric Power Level Reported"
     type: ELECTRIC_POWER_LEVEL
   - platform: truma_inetbox
     name: "Energy mix"
     type: ENERGY_MIX
   - platform: truma_inetbox
     name: "Operating status"
+    id: operating_status
     type: OPERATING_STATUS
   - platform: truma_inetbox
     name: "Heater error code"
@@ -186,28 +169,6 @@ switch:
     turn_off_action:
       # You can also use the simplified syntax.
       - truma_inetbox.heater.set_target_water_temperature_enum: "OFF"
-  - platform: template
-    name: "Active Timer"
-    lambda: |-
-      return id(TIMER_ACTIVE).state;
-    turn_on_action:
-      - truma_inetbox.timer.activate:
-          start: 7:00
-          stop: 9:30
-          # Required: Set room temp to a number between 5 and 30
-          room_temperature: 13
-          # Optional: Set heating mode: `"OFF"`, `ECO`, `HIGH`, `BOOST`
-          heating_mode: ECO
-          # Optional: Set water temp as number: `0`, `40`, `60`, `80`
-          water_temperature: 0
-          # Optional: Set energy mix to: `GAS`, `MIX`, `ELECTRICITY`
-          energy_mix: GAS
-          # Optional: Set electricity level to `0`, `900`, `1800`
-          watt: 0
-
-    turn_off_action:
-      # You can also use the simplified syntax.
-      - truma_inetbox.timer.disable
 
 button:
   - platform: template
@@ -247,15 +208,3 @@ button:
     name: "Set electric power level to 1800 Watt"
     on_press:
       - truma_inetbox.heater.set_electric_power_level: 1800
-
-wifi:
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Fallback Hotspot"
-    password: "Sw9g4XJtoyrn"
-
-web_server:
-  port: 80
-  local: true
-  version: 2
-  include_internal: true

@@ -1,5 +1,20 @@
 # ESPHome truma_inetbox component
 
+## Changes according to ESPHome 2026.4.0
+This release fixes two independent issues exposed by ESPHome 2026.4.0:
+Compile failures due to changes in TEMPLATABLE_VALUE handling of enums.
+And second a runtime API/log crash caused by duplicate entity names across platforms. Attention: If you use your own yaml, please update it accordingly! 
+
+## Changes according to ESPHome 2026.3.0
+ESPHome 2026.3 removed the queue/wakeup model.
+So removed the uartEventTask_ concept and custom UART component and instead use the new ESPHome standard.
+Additionally dropped the support of arduino and rp20240, because I can't test and maintain them.
+
+## Initial changes
+There are several forks available all adressing different issues to make this code compile again. Unfortunatly none addresses all issues at the same time. I collected the different approaches into this release to successfull compile it again.
+
+## Original Code
+The initial project was done by Fabian Schmidt, thanks to his work! He has not continued his work, so I stepped in to maintain my fork.
 ESPHome component to remote control Truma CP Plus Heater by simulating a Truma iNet box.
 
 See [1](https://github.com/danielfett/inetbox.py) and [2](https://github.com/mc0110/inetbox2mqtt) for great documentation about how to connect an CP Plus to an ESP32 or RP2040.
@@ -8,10 +23,7 @@ See [1](https://github.com/danielfett/inetbox.py) and [2](https://github.com/mc0
 
 This project is based on the work of the [WomoLIN project](https://github.com/muccc/WomoLIN) and [mc0110 inetbox.py](https://github.com/danielfett/inetbox.py), especially the initial protocol decoding and the inet box log files.
 
-## Changes to compile again under recent ESPhome versions
 
-There are several forks available all adressing different issues to make this code compile again. Unfortunatly none addresses all issues at the same time. I collected the different approaches into this release to successfull compile it again.
-*Remark:* At the moment only compiling with the arduino framework works.
 
 ## Example configuation
 

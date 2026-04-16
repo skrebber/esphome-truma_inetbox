@@ -26,7 +26,7 @@ from esphome.components.uart import (
     CONF_PARITY,
     KEY_UART_DEVICES,
 )
-from esphome.core import CORE
+from esphome.core import CORE, Lambda
 from .entity_helpers import count_id_usage
 
 DEPENDENCIES = ["uart"]
@@ -399,8 +399,11 @@ async def truma_inetbox_heater_set_target_room_temperature_to_code(
     template_ = await cg.templatable(config[CONF_TEMPERATURE], args, cg.uint8)
     cg.add(var.set_temperature(template_))
 
-    template_ = await cg.templatable(config[CONF_HEATING_MODE], args, cg.uint16)
-    cg.add(var.set_heating_mode(template_))
+    if isinstance(config[CONF_HEATING_MODE], Lambda):
+        template_ = await cg.templatable(config[CONF_HEATING_MODE], args, cg.uint16)
+        cg.add(var.set_heating_mode(template_))
+    else:
+        cg.add(var.set_heating_mode(config[CONF_HEATING_MODE]))
 
     return var
 
@@ -449,8 +452,11 @@ async def truma_inetbox_heater_set_target_water_temperature_enum_to_code(
     var = cg.new_Pvariable(action_id, template_arg)
     await cg.register_parented(var, config[CONF_ID])
 
-    template_ = await cg.templatable(config[CONF_TEMPERATURE], args, cg.uint16)
-    cg.add(var.set_temperature(template_))
+    if isinstance(config[CONF_TEMPERATURE], Lambda):
+        template_ = await cg.templatable(config[CONF_TEMPERATURE], args, cg.uint16)
+        cg.add(var.set_temperature(template_))
+    else:
+        cg.add(var.set_temperature(config[CONF_TEMPERATURE]))
 
     return var
 
@@ -501,11 +507,17 @@ async def truma_inetbox_heater_set_energy_mix_level_to_code(
     var = cg.new_Pvariable(action_id, template_arg)
     await cg.register_parented(var, config[CONF_ID])
 
-    template_ = await cg.templatable(config[CONF_ENERGY_MIX], args, cg.uint8)
-    cg.add(var.set_energy_mix(template_))
+    if isinstance(config[CONF_ENERGY_MIX], Lambda):
+        template_ = await cg.templatable(config[CONF_ENERGY_MIX], args, cg.uint8)
+        cg.add(var.set_energy_mix(template_))
+    else:
+        cg.add(var.set_energy_mix(config[CONF_ENERGY_MIX]))
 
-    template_ = await cg.templatable(config[CONF_WATT], args, cg.uint16)
-    cg.add(var.set_watt(template_))
+    if isinstance(config[CONF_WATT], Lambda):
+        template_ = await cg.templatable(config[CONF_WATT], args, cg.uint16)
+        cg.add(var.set_watt(template_))
+    else:
+        cg.add(var.set_watt(config[CONF_WATT]))
 
     return var
 
@@ -588,17 +600,26 @@ async def truma_inetbox_timer_activate_to_code(config, action_id, template_arg, 
     template_ = await cg.templatable(config[CONF_ROOM_TEMPERATURE], args, cg.uint8)
     cg.add(var.set_room_temperature(template_))
 
-    template_ = await cg.templatable(config[CONF_HEATING_MODE], args, cg.uint16)
-    cg.add(var.set_heating_mode(template_))
+    if isinstance(config[CONF_HEATING_MODE], Lambda):
+        template_ = await cg.templatable(config[CONF_HEATING_MODE], args, cg.uint16)
+        cg.add(var.set_heating_mode(template_))
+    else:
+        cg.add(var.set_heating_mode(config[CONF_HEATING_MODE]))
 
     template_ = await cg.templatable(config[CONF_WATER_TEMPERATURE], args, cg.uint8)
     cg.add(var.set_water_temperature(template_))
 
-    template_ = await cg.templatable(config[CONF_ENERGY_MIX], args, cg.uint8)
-    cg.add(var.set_energy_mix(template_))
+    if isinstance(config[CONF_ENERGY_MIX], Lambda):
+        template_ = await cg.templatable(config[CONF_ENERGY_MIX], args, cg.uint8)
+        cg.add(var.set_energy_mix(template_))
+    else:
+        cg.add(var.set_energy_mix(config[CONF_ENERGY_MIX]))
 
-    template_ = await cg.templatable(config[CONF_WATT], args, cg.uint16)
-    cg.add(var.set_watt(template_))
+    if isinstance(config[CONF_WATT], Lambda):
+        template_ = await cg.templatable(config[CONF_WATT], args, cg.uint16)
+        cg.add(var.set_watt(template_))
+    else:
+        cg.add(var.set_watt(config[CONF_WATT]))
     return var
 
 

@@ -9,7 +9,14 @@ namespace truma_inetbox {
 template<typename... Ts> class HeaterRoomTempAction : public Action<Ts...>, public Parented<TrumaiNetBoxApp> {
  public:
   TEMPLATABLE_VALUE(uint8_t, temperature)
-  TEMPLATABLE_VALUE(HeatingMode, heating_mode)
+
+ protected:
+  TemplatableValue<HeatingMode, Ts...> heating_mode_{};
+
+ public:
+  template<typename V> void set_heating_mode(V heating_mode) {
+    this->heating_mode_ = TemplatableValue<HeatingMode, Ts...>(heating_mode);
+  }
 
   void play(Ts... x) override {
     this->parent_->get_heater()->action_heater_room(this->temperature_.value_or(x..., 0),
@@ -27,8 +34,13 @@ template<typename... Ts> class HeaterWaterTempAction : public Action<Ts...>, pub
 };
 
 template<typename... Ts> class HeaterWaterTempEnumAction : public Action<Ts...>, public Parented<TrumaiNetBoxApp> {
+ protected:
+  TemplatableValue<TargetTemp, Ts...> temperature_{};
+
  public:
-  TEMPLATABLE_VALUE(TargetTemp, temperature)
+  template<typename V> void set_temperature(V temperature) {
+    this->temperature_ = TemplatableValue<TargetTemp, Ts...>(temperature);
+  }
 
   void play(Ts... x) override {
     this->parent_->get_heater()->action_heater_water(this->temperature_.value_or(x..., TargetTemp::TARGET_TEMP_OFF));
@@ -45,9 +57,17 @@ template<typename... Ts> class HeaterElecPowerLevelAction : public Action<Ts...>
 };
 
 template<typename... Ts> class HeaterEnergyMixAction : public Action<Ts...>, public Parented<TrumaiNetBoxApp> {
+ protected:
+  TemplatableValue<EnergyMix, Ts...> energy_mix_{};
+  TemplatableValue<ElectricPowerLevel, Ts...> watt_{};
+
  public:
-  TEMPLATABLE_VALUE(EnergyMix, energy_mix)
-  TEMPLATABLE_VALUE(ElectricPowerLevel, watt)
+  template<typename V> void set_energy_mix(V energy_mix) {
+    this->energy_mix_ = TemplatableValue<EnergyMix, Ts...>(energy_mix);
+  }
+  template<typename V> void set_watt(V watt) {
+    this->watt_ = TemplatableValue<ElectricPowerLevel, Ts...>(watt);
+  }
 
   void play(Ts... x) override {
     this->parent_->get_heater()->action_heater_energy_mix(
@@ -75,10 +95,23 @@ template<typename... Ts> class TimerActivateAction : public Action<Ts...>, publi
   TEMPLATABLE_VALUE(u_int16_t, start)
   TEMPLATABLE_VALUE(u_int16_t, stop)
   TEMPLATABLE_VALUE(uint8_t, room_temperature)
-  TEMPLATABLE_VALUE(HeatingMode, heating_mode)
   TEMPLATABLE_VALUE(uint8_t, water_temperature)
-  TEMPLATABLE_VALUE(EnergyMix, energy_mix)
-  TEMPLATABLE_VALUE(ElectricPowerLevel, watt)
+
+ protected:
+  TemplatableValue<HeatingMode, Ts...> heating_mode_{};
+  TemplatableValue<EnergyMix, Ts...> energy_mix_{};
+  TemplatableValue<ElectricPowerLevel, Ts...> watt_{};
+
+ public:
+  template<typename V> void set_heating_mode(V heating_mode) {
+    this->heating_mode_ = TemplatableValue<HeatingMode, Ts...>(heating_mode);
+  }
+  template<typename V> void set_energy_mix(V energy_mix) {
+    this->energy_mix_ = TemplatableValue<EnergyMix, Ts...>(energy_mix);
+  }
+  template<typename V> void set_watt(V watt) {
+    this->watt_ = TemplatableValue<ElectricPowerLevel, Ts...>(watt);
+  }
 
   void play(Ts... x) override {
     this->parent_->get_timer()->action_timer_activate(
